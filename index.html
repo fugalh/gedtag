@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC
+    "-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN"
+    "http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd">
+<html xmlns:svg='http://www.w3.org/2000/svg' xml:lang='en' xmlns='http://www.w3.org/1999/xhtml'>
+<head><meta content='application/xhtml+xml;charset=utf-8' http-equiv='Content-type' /><title>GEDCOM Tagger</title></head>
+<body>
+<h1 id='gedcom_tagger'>GEDCOM Tagger</h1>
+
+<p>This filter will tag a GEDCOM file with REFN tags, which show up in PAF, for example, as custom IDs. The tags are similar to <a href='http://www.taguri.org/'>Tag URIs</a>. The intent is to never lose track of where the 15th duplicate of aunt Mary came from in your database.</p>
+<p>It will not replace any tags, nor change your GEDCOM in any other way. If you don't believe me, you're welcome to <a href="gedtag">review the source</a> and send in a patch.</p>
+<form enctype='multipart/form-data' action='gedtag.cgi' method='post'>
+<input name='gedcom' type='file' /><input type='submit' value='Tag it' />
+</form></body></html>
