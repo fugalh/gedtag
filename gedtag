@@ -1,0 +1,64 @@
+# add pseudo-taguri REFNs
+# e.g. ah189@cleveland.freenet.edu,1992-11-20:ROYALS.GED/INDI/XREF/I1
+
+require 'date'
+
+GEDCOM_Regex = /^(?:\s|\xEF\xBB\xBF|\xFF\xFE|\xFE\xFF)*(\d)+\s+((@[^@]+@)\s+)?([A-Za-z_0-9]+)( (@[^@]+@|[^\r\n]+))?$/
+
+# TODO parse options (override email, date, filename)
+
+def taguri(gedcom, record)
+  email = (gedcom['email'] or gedcom['name'] or '' )
+  date = (gedcom[:date] or Date.today)
+  file = (gedcom['file'] or ARGV.first or '')
+  tipo = (record[:tipo] or '')
+  xref = %w[afn refn _guid _uid rin xref].map {|t| 
+    record.has_key?(t) ? [t,record[t]] : nil
+  }.select{|t| t}.first
+  sprintf("%s,%s:%s/%s/%s:%s", email, date, file, tipo.upcase, 
+          xref[0].upcase, xref[1])
+end
+
+gedcom = {}
+record = nil
+head = false
+ARGF.each_line do |line|
+  unless line.strip =~ GEDCOM_Regex
+    $stderr.puts "Parse error: '#{line}', ignoring"
+    next
+  end
+  level = $1.to_i
+  xref = $3 ? $3[1..-2] : nil
+  tag = $4.upcase
+  value = $6
+
+  if level == 0
+    if record
+      puts "1 REFN %s" % taguri(gedcom, record)
+      record[:refns].each {|l,v| puts l}
+      record = nil
+    end
+    if tag =~ /note|repo|sour|obje|fam|indi/i
+      record = {:refns => [], 'xref' => xref, :tipo => tag}
+    end
+    head = (tag =~ /head|subm/i)
+  end
+
+  if head
+    case tag
+    when /file|email|name/i
+      gedcom[tag.downcase] = value
+    when /date/i
+      gedcom[:date] = Date.parse(value)
+    end
+  elsif level == 1
+    case tag
+    when /_g?uid|afn|rin|rfn/i
+      record[tag.downcase] = value
+    when /refn/i
+      record[:refns] << [line,value]
+      record['refn'] ||= value
+    end
+  end
+  puts line unless tag =~ /refn/i
+end
